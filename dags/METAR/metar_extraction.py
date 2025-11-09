@@ -48,8 +48,11 @@ def make_request(
         for i, titulo in enumerate(cabecalho):
             # print(f'Analisando o titulo: {titulo}, com i={i}')
             for linha in dados:
-                # print(linha)
+                # print(cabecalho)
                 if len(linha) != 1:
+                    if type(linha[i]) == str:
+                        linha[i] = linha[i].replace('"null"', 'null')
+                    # print(linha[i])
                     df_scheme[titulo].append(linha[i])
             # print('Titulo analisado!')
         dataframe = DataFrame(df_scheme)
@@ -94,7 +97,7 @@ def metar_extraction():
         task_id='create_table',
         conn_id='postgres',
         sql="""
-          CREATE TABLE metar (
+          CREATE TABLE IF NOT EXISTS airdata.metar (
             station TEXT,                        -- código ICAO do aeródromo
             valid TIMESTAMP,                      -- datetime em questão
             tmpf REAL,                           -- temperatura em fahrenheit do ar
@@ -116,18 +119,19 @@ def metar_extraction():
             skyc1 TEXT,                          -- cobertura de nuvem no nível 1
             skyc2 TEXT,                          -- cobertura de nuvem no nível 2
             skyc3 TEXT,                          -- cobertura de nuvem no nível 3
+            skyc4 TEXT,                          -- cobertura de nuvem no nível 4
             skyl1 REAL,                          -- altura das nuvens no nível 1 (pés)
             skyl2 REAL,                          -- altura das nuvens no nível 2 (pés)
             skyl3 REAL,                          -- altura das nuvens no nível 3 (pés)
+            skyl4 REAL,                          -- altura das nuvens no nível 4 (pés)
             wxCodes TEXT,                        -- código de clima presente
-            iceAccretion1hr TEXT,                -- gelo acumulado em uma hora (float | string)
-            iceAccretion3hr TEXT,                -- gelo acumulado em três horas (float | string)
-            iceAccretion6hr TEXT,                -- gelo acumulado em seis horas (float | string)
-            peakWindGust REAL,                   -- pico de rajada de vento em nós
-            peakWindGustMph REAL,                -- pico de rajada de vento em milhas por hora
-            peakWindDrct REAL,                   -- ângulo da rajada de vento de pico em graus
-            peakWindTime TIMESTAMP,              -- horário do pico de rajada de vento
-            snowDepth REAL,                      -- profundidade da neve (não especificado)
+            ice_accretion_1hr TEXT,                -- gelo acumulado em uma hora (float | string)
+            ice_accretion_3hr TEXT,                -- gelo acumulado em três horas (float | string)
+            ice_accretion_6hr TEXT,                -- gelo acumulado em seis horas (float | string)
+            peak_wind_gust REAL,                   -- pico de rajada de vento em nós
+            peak_wind_drct REAL,                   -- ângulo da rajada de vento de pico em graus
+            peak_wind_time TIMESTAMP,              -- horário do pico de rajada de vento
+            snowdepth REAL,                      -- profundidade da neve (não especificado)
             metar TEXT                           -- mensagem METAR crua
         );
     	"""
@@ -141,6 +145,9 @@ def metar_extraction():
         """
         from sqlalchemy import create_engine
         import configparser
+
+        print(f'Data de inicio: {start_date.strftime("%d/%m/%Y")}')
+        print(f'Data de fim: {end_date.strftime("%d/%m/%Y")}')
 
         # Leitura das configurações do banco de dados
         config = configparser.ConfigParser()
@@ -160,20 +167,24 @@ def metar_extraction():
         )
 
         if not stations:
+            print('Estações não providenciadas. Obtendo todas as estações')
             stations = get_all_stations()
 
+        print('Realizando a requisição')
         data = make_request(
             stations=stations,
             start_date=start_date,
             end_date=end_date
         )
+        print('Requisição encerrada')
 
-        if not data:
+        if data is None:
             print('Dados não obtidos, algum erro na requisição do site.')
             return
 
+        print('Inserindo os dados na tabela airdata.metar')
         data.to_sql(
-            "vra",
+            "metar",
             con=engine,
             schema="airdata",
             if_exists="append",
@@ -181,6 +192,7 @@ def metar_extraction():
             chunksize=5000,
             method="multi"
         )
+        print('Inserção de dados finalizada')
 
     insert_data = insert_metar_data(
         start_date=date(day=1, month=1, year=2025),
