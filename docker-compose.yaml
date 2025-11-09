@@ -214,6 +214,7 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
@@ -275,6 +276,19 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
+
+  airflow-connections:
+    image: apache/airflow:3.1.2
+    environment:
+      <<: *airflow-common-env
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow connections add 'postgres' --conn-json '{\"conn_type\": \"postgres\", \"host\": \"postgres\", \"port\": 5432, \"login\": \"airflow\", \"password\": \"airflow\", \"schema\": \"airflow\"}'
+      "
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
 
   airflow-cli:
     <<: *airflow-common
