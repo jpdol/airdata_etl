@@ -13,7 +13,7 @@ def parse_date(x):
 
 	return pd.to_datetime(x, format="%d/%m/%Y", errors="coerce")
 	
-@dag(dag_id='vra_extraction', schedule='0 6 * * *')
+@dag(dag_id='vra_extraction', schedule='0 6 * * *', max_active_runs=1)
 def vra_extraction():
 	"""DAG para extração e atualização dos dados da VRA (Voo Regular Ativo - ANAC)"""
 	

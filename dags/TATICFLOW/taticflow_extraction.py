@@ -2,7 +2,7 @@ from airflow.sdk import dag, task
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
 	
-@dag(dag_id='taticflow_extraction', schedule='0 * * * *')
+@dag(dag_id='taticflow_extraction', schedule='0 * * * *', max_active_runs=1)
 def taticflow_extraction():
 	"""DAG para extração e atualização dos dados da Tatic Flow"""
 	
