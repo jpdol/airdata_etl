@@ -51,7 +51,8 @@ def make_request(
                 # print(cabecalho)
                 if len(linha) != 1:
                     if type(linha[i]) == str:
-                        linha[i] = linha[i].replace('"null"', 'null')
+                        if linha[i] in ['null', '"null"', "'null'"]:
+                            linha[i] = None
                     # print(linha[i])
                     df_scheme[titulo].append(linha[i])
             # print('Titulo analisado!')
@@ -90,7 +91,7 @@ def get_html_from_url(url: str, verbose: bool = True) -> str:
     return html_content
 
 
-@dag(dag_id='metar_extraction', schedule='0 6 * * *')
+@dag(dag_id='metar_extraction', schedule='0 6 * * *', max_active_runs=1)
 def metar_extraction():
     # Task para criar a tabela VRA se não existir
     create_table = SQLExecuteQueryOperator(
