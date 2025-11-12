@@ -1,5 +1,5 @@
-from airflow.sdk import dag, task
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.sdk import dag, task
 from datetime import date
 
 

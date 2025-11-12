@@ -118,15 +118,16 @@ services:
     ports:
       - "3030:3030"
     environment:
-      # Configurações administrativas
-      ADMIN_PASSWORD: admin123
-      # Java options (opcional - ajuste conforme necessário)
+      ADMIN_PASSWORD: jenafuseki-airdata
+      ADMIN_LOGIN: airdata
       JVM_ARGS: "-Xmx2g"
     volumes:
-      # Persistência dos dados
       - ./fuseki-data:/fuseki
-      # Opcional: configurações customizadas
       - ./fuseki-config:/fuseki-config
+      - ./dags:/opt/airflow/dags
+      - ./processed_ttls:/opt/airflow/processed_ttls
+      - ./new_ttls:/opt/airflow/new_ttls
+    command: [ "--config=/fuseki-config/airdata.ttl" ]
     restart: unless-stopped
     networks:
       - jena-network
