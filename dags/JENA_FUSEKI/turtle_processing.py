@@ -243,8 +243,7 @@ class TurtleLoader:
 @dag(dag_id='turtle_processing', schedule='0 6 * * *', max_active_runs=1)
 def turtle_insertion():
     # from JENA_FUSEKI.TurtleLoader import TurtleLoader
-    print('aaa')
-
+    # TODO entender melhor como funcionam volumes e pastas dentro de um container (aparentemente não é o mesmo do que o computador)
     new_ttls_dir = "/opt/airflow/data/new_ttls"
     processed_ttls_dir = "/opt/airflow/data/processed_ttls"
     jena_fuseki_database = "airdata"
@@ -254,13 +253,12 @@ def turtle_insertion():
 
     auth_user = "admin"
     auth_pass = "admin123"
-    global responses
-    responses = {}
 
     @task
-    def insert_turtles(input_dir: str):
+    def insert_turtles(input_dir: str) -> dict:
         if not os.listdir(input_dir):
             print('Diretório vazio.')
+            return {}
 
         tl = TurtleLoader(
             fuseki_url="http://localhost:3030",
@@ -269,15 +267,16 @@ def turtle_insertion():
             auth_pass=auth_pass,
             verbose=True
         )
-        global responses
+
         responses = tl.load_from_directory(
             dir_path=input_dir
         )
+        return responses
 
     @task
-    def move_files(output_dir: str):
+    def move_files(output_dir: str, responses: dict):
         if not responses:
-            print('Sem nenhum resultado.')
+            print('Sem nenhum resultado para processar')
             return
 
         # Códigos de cores ANSI
@@ -319,17 +318,9 @@ def turtle_insertion():
 
             print(CYAN + '-' * 30 + RESET)
         print(CYAN + '-' * 40 + RESET)
-        # Resetando a variável
-        responses = {}
 
-    insert = insert_turtles(
-        input_dir=new_ttls_dir,
-    )
-    move = move_files(
-        output_dir=processed_ttls_dir
-    )
-
-    insert >> move
+    responses = insert_turtles(input_dir=new_ttls_dir)
+    move_files(output_dir=processed_ttls_dir, responses=responses)
 
 
 turtle_insertion()

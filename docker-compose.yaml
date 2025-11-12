@@ -122,11 +122,11 @@ services:
       ADMIN_LOGIN: airdata
       JVM_ARGS: "-Xmx2g"
     volumes:
-      - ./fuseki-data:/fuseki
-      - ./fuseki-config:/fuseki-config
-      - ./dags:/opt/airflow/dags
-      - ./processed_ttls:/opt/airflow/processed_ttls
-      - ./new_ttls:/opt/airflow/new_ttls
+      - fuseki-data:/fuseki
+      - fuseki-config:/fuseki-config
+      - dags:/opt/airflow/dags
+      - processed_ttls:/opt/airflow/processed_ttls
+      - new_ttls:/opt/airflow/new_ttls
     command: [ "--config=/fuseki-config/airdata.ttl" ]
     restart: unless-stopped
     networks:
@@ -347,6 +347,11 @@ services:
 
 volumes:
   postgres-db-volume:
+  fuseki-data:
+  fuseki-config:
+  dags:
+  processed_ttls:
+  new_ttls:
 
 networks:
   jena-network:
