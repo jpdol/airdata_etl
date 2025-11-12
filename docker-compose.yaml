@@ -78,6 +78,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - turtles:/opt/airflow/data
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -125,8 +126,7 @@ services:
       - fuseki-data:/fuseki
       - fuseki-config:/fuseki-config
       - dags:/opt/airflow/dags
-      - processed_ttls:/opt/airflow/processed_ttls
-      - new_ttls:/opt/airflow/new_ttls
+      - turtles:/opt/airflow/turtles
     command: [ "--config=/fuseki-config/airdata.ttl" ]
     restart: unless-stopped
     networks:
@@ -350,8 +350,7 @@ volumes:
   fuseki-data:
   fuseki-config:
   dags:
-  processed_ttls:
-  new_ttls:
+  turtles:
 
 networks:
   jena-network:
