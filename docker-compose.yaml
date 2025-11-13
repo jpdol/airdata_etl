@@ -80,6 +80,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - turtles:/opt/airflow/data
   user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+    - jena-network  # IMPORTANTE: Adicionar à mesma rede do Fuseki
   depends_on:
     &airflow-common-depends-on
     # redis:
@@ -119,8 +121,8 @@ services:
     ports:
       - "3030:3030"
     environment:
-      ADMIN_PASSWORD: jenafuseki-airdata
-      ADMIN_LOGIN: airdata
+      ADMIN_PASSWORD: admin123
+      ADMIN_LOGIN: admin
       JVM_ARGS: "-Xmx2g"
     volumes:
       - fuseki-data:/fuseki
@@ -282,8 +284,15 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /opts/airflow/{logs,dags,plugins,config}
-        chown -R "${AIRFLOW_UID}:0" /opts/airflow/{logs,dags,plugins,config}
+        mkdir -p /opt/airflow/{logs,dags,plugins,config}
+        chown -R "${AIRFLOW_UID}:0" /opt/airflow/{logs,dags,plugins,config}
+        
+        # CRIAR DIRETÓRIOS NO VOLUME E AJUSTAR PERMISSÕES
+        mkdir -p /opt/airflow/data/new_ttls
+        mkdir -p /opt/airflow/data/processed_ttls
+        chown -R "${AIRFLOW_UID}:0" /opt/airflow/data
+        chmod -R 775 /opt/airflow/data
+        
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:

@@ -244,8 +244,8 @@ class TurtleLoader:
 def turtle_insertion():
     # from JENA_FUSEKI.TurtleLoader import TurtleLoader
     # TODO entender melhor como funcionam volumes e pastas dentro de um container (aparentemente não é o mesmo do que o computador)
-    new_ttls_dir = "/opt/airflow/data/new_ttls"
-    processed_ttls_dir = "/opt/airflow/data/processed_ttls"
+    new_ttls_dir = "/opt/airflow/turtles/new_ttls"
+    processed_ttls_dir = "/opt/airflow/turtles/processed_ttls"
     jena_fuseki_database = "airdata"
 
     os.makedirs(new_ttls_dir, exist_ok=True)
